@@ -14,6 +14,7 @@ class TokenType(Enum):
     RIGHT_BRACE = auto()
     DOT = auto()
     COMMA = auto()
+    COLON = auto()
 
     # Either one or two character tokens, depending on context.
     PLUS = auto()
@@ -51,6 +52,7 @@ class TokenType(Enum):
     IF = auto()
     ELSE = auto()
     WHILE = auto()
+    FOR = auto()
     FUNC = auto()
     RETURN = auto()
     END = auto()
