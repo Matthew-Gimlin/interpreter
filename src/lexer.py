@@ -17,7 +17,7 @@ TWO_CHARACTER_TYPES = {
     '+': TokenType.PLUS,
     '+=': TokenType.PLUS_EQUAL,
     '-': TokenType.MINUS,
-    '--': TokenType.MINUS_EQUAL,
+    '-=': TokenType.MINUS_EQUAL,
     '*': TokenType.MULTIPLY,
     '*=': TokenType.MULTIPLY_EQUAL,
     '/': TokenType.DIVIDE,

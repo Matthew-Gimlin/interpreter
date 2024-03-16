@@ -22,6 +22,61 @@ class TestLexer(unittest.TestCase):
         tokens = lexer.get_tokens()
 
         self.assertEqual(lexer.error, True)
+
+    def test_one_character_tokens(self) -> None:
+        """Test all one character tokens.
+        """
+        symbols = '()[]{}.,:'
+        token_types = [
+            TokenType.LEFT_PARENTHESIS,
+            TokenType.RIGHT_PARENTHESIS,
+            TokenType.LEFT_BRACKET,
+            TokenType.RIGHT_BRACKET,
+            TokenType.LEFT_BRACE,
+            TokenType.RIGHT_BRACE,
+            TokenType.DOT,
+            TokenType.COMMA,
+            TokenType.COLON,
+        ]
+        lexer = Lexer(symbols)
+        tokens = lexer.get_tokens()
+
+        self.assertEqual(lexer.error, False)
+        self.assertEqual(len(tokens), len(token_types) + 1)
+        for i in range(len(token_types)):
+            self.assertEqual(tokens[i].token_type, token_types[i])
+        self.assertEqual(tokens[-1].token_type, TokenType.EOF)
+
+    def test_two_character_tokens(self) -> None:
+        """Test all one or two character tokens.
+        """
+        symbols = '+ += - -= * *= / /= = == ! != < <= > >='
+        token_types = [
+            TokenType.PLUS,
+            TokenType.PLUS_EQUAL,
+            TokenType.MINUS,
+            TokenType.MINUS_EQUAL,
+            TokenType.MULTIPLY,
+            TokenType.MULTIPLY_EQUAL,
+            TokenType.DIVIDE,
+            TokenType.DIVIDE_EQUAL,
+            TokenType.EQUAL,
+            TokenType.EQUAL_EQUAL,
+            TokenType.BANG,
+            TokenType.BANG_EQUAL,
+            TokenType.LESS,
+            TokenType.LESS_EQUAL,
+            TokenType.GREATER,
+            TokenType.GREATER_EQUAL,
+        ]
+        lexer = Lexer(symbols)
+        tokens = lexer.get_tokens()
+        
+        self.assertEqual(lexer.error, False)
+        self.assertEqual(len(tokens), len(token_types) + 1)
+        for i in range(len(token_types)):
+            self.assertEqual(tokens[i].token_type, token_types[i])
+        self.assertEqual(tokens[-1].token_type, TokenType.EOF)
     
     def test_integer(self) -> None:
         """Test an integer.
