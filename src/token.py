@@ -3,8 +3,6 @@ from enum import Enum, auto
 class TokenType(Enum):
     """Defines the possible token types.
     """
-    INVALID = auto()
-    
     # One character tokens.
     LEFT_PARENTHESIS = auto()
     RIGHT_PARENTHESIS = auto()

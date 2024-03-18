@@ -2,15 +2,16 @@
 
 import argparse
 from src.lexer import Lexer
+from src.parser import Parser
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description='Interpret source code.')
-    parser.add_argument('file',
-                        nargs='?',
-                        default=None,
-                        help='A source file.')
+    arg_parser = argparse.ArgumentParser(description='Interpret source code.')
+    arg_parser.add_argument('file',
+                            nargs='?',
+                            default=None,
+                            help='A source file.')
 
-    args = parser.parse_args()
+    args = arg_parser.parse_args()
     if args.file:
         source = ''
         try:
@@ -25,10 +26,14 @@ def main() -> None:
         tokens = lexer.get_tokens()
         if lexer.error:
             return
-        
-        for t in tokens:
-            print(t)
 
+        parser = Parser(tokens)
+        expression = parser.get_expression()
+        if parser.error:
+            return
+
+        print(expression)
+        
     else:
         while True:
             try:
@@ -39,8 +44,12 @@ def main() -> None:
                 if lexer.error:
                     continue
                 
-                for t in tokens:
-                    print(t)
+                parser = Parser(tokens)
+                expression = parser.get_expression()
+                if parser.error:
+                    continue
+
+                print(expression)
             
             except EOFError:
                 print()
