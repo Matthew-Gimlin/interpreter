@@ -19,10 +19,7 @@ class Parser:
         """
         self.tokens = tokens
         self.position = 0
-        if len(tokens) > 0:
-            self.token = tokens[0]
-        else:
-            self.token = None
+        self.token = None if len(tokens) == 0 else tokens[0]
         self.error = False
 
     def _error(self, message: str) -> None:
@@ -31,7 +28,7 @@ class Parser:
         Args:
             message: An error message.
         """
-        # print(f'Line {self.token.line}')
+        print(f'Line {self.token.line}')
         print(f'Error: {message}')
         self.error = True
 
@@ -79,11 +76,12 @@ class Parser:
             self._eat()
             expression = self._eat_expression()
 
-            token = self._eat()
-            if not token or token.token_type != TokenType.RIGHT_PARENTHESIS:
+            # token = self._eat()
+            if not self.token or self.token.token_type != TokenType.RIGHT_PARENTHESIS:
                 self._error("Expected ')' after expression.")
                 return Expression()
 
+            self._eat()
             return Grouping(expression)
 
         self._error('Expected expression.')
@@ -95,7 +93,7 @@ class Parser:
                            TokenType.MINUS]):
             operator = self._eat()
             right = self._eat_unary()
-            return UnaryExpression(operator, expression)
+            return UnaryExpression(operator, right)
 
         return self._eat_primary()
 
