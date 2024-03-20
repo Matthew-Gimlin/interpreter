@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
+from src.error import *
 from src.lexer import Lexer
 from src.parser import Parser
-from src.error import *
+from src.interpreter import Interpreter
 
 def to_string(value: object) -> str:
     if value == None:
@@ -37,13 +38,16 @@ def main() -> None:
             if parser.error:
                 return
 
-            print(expression.evaluate())
+            interpreter = Interpreter()
+            print(to_string(interpreter.evaluate(expression)))
             
         except FileNotFoundError:
             print(f"Error: Cannot open file '{args.file}'")
             return
         
     else:
+        print('Coffee Bean interpreter.')
+        
         while True:
             try:
                 line = input('> ')
@@ -58,7 +62,8 @@ def main() -> None:
                 if parser.error:
                     continue
 
-                print(to_string(expression.evaluate()))
+                interpreter = Interpreter()
+                print(to_string(interpreter.evaluate(expression)))
             
             except EOFError:
                 print()
