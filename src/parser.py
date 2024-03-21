@@ -66,8 +66,8 @@ class Parser:
         if self._match([TokenType.NULL,
                         TokenType.FALSE,
                         TokenType.TRUE,
-                        # TokenType.STRING,
-                        # TokenType.CHARACTER,
+                        TokenType.STRING,
+                        TokenType.CHARACTER,
                         TokenType.INTEGER,
                         TokenType.FLOAT]):
             return Literal(self._eat())
@@ -79,11 +79,10 @@ class Parser:
             if not self.token or self.token.token_type != TokenType.RIGHT_PARENTHESIS:
                 self._error("Expected ')' after expression.")
 
-            self._eat()
+            self._eat() # Eat the right paranthesis.
             return Grouping(expression)
 
         self._error('Expected expression.')
-        return Expression()
 
     def _eat_unary(self) -> Expression:
         while self._match([TokenType.BANG,
@@ -170,6 +169,8 @@ class Parser:
         while self.token:
             if self.token.token_type == TokenType.EOF:
                 break
+
+            # Eat an empty statement.
             elif self.token.token_type == TokenType.NEWLINE:
                 self._eat()
                 continue

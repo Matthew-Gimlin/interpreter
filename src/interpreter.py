@@ -10,9 +10,10 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
     Attributes:
         line: The current line number in the source code.
     """
-    def __init__(self) -> None:
+    def __init__(self, print_expressions: bool = False) -> None:
         """Constructor.
         """
+        self.print_expressions = print_expressions
         self.line = 1
 
     def _error(self, message: str) -> None:
@@ -48,11 +49,13 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             return False
         elif value_type == bool:
             return value
+        elif value_type == str:
+            return value != ''
         elif value_type == int:
             return value != 0
         elif value_type == float:
             return value != 0.0
-
+        
         return False
 
     def visit_literal(self, literal: Literal) -> object:
@@ -74,6 +77,10 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             return True
         elif literal_type == TokenType.FALSE:
             return False
+        elif literal_type == TokenType.STRING:
+            return str(literal_symbol[1:-1])
+        elif literal_type == TokenType.CHARACTER:
+            return str(literal_symbol[1:-1])
         elif literal_type == TokenType.INTEGER:
             return int(literal_symbol)
         elif literal_type == TokenType.FLOAT:
@@ -156,7 +163,9 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         return expression.accept(self)
 
     def visit_expression(self, expression: ExpressionStatement) -> None:
-        self.evaluate(expression.expression)
+        value = self.evaluate(expression.expression)
+        if self.print_expressions:
+            print(value)
 
     def visit_echo(self, echo: Echo) -> None:
         value = self.evaluate(echo.expression)
