@@ -1,7 +1,7 @@
 from src.token import *
 
-class Visitor:
-    """Defines a visitor base class.
+class ExpressionVisitor:
+    """Defines an expression visitor base class.
     """
     def visit_literal(self, literal):
         pass
@@ -18,7 +18,7 @@ class Visitor:
 class Expression:
     """Defines an expression base class.
     """
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor):
         pass
 
 class Literal(Expression):
@@ -43,7 +43,7 @@ class Literal(Expression):
         """
         return f'{self.value}'
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor):
         return visitor.visit_literal(self)
 
 class BinaryExpression(Expression):
@@ -77,7 +77,7 @@ class BinaryExpression(Expression):
         """
         return f'({self.operator} {self.left} {self.right})'
 
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor):
         return visitor.visit_binary(self)
 
 class UnaryExpression(Expression):
@@ -105,7 +105,7 @@ class UnaryExpression(Expression):
         """
         return f'({self.operator} {self.right})'
     
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor):
         return visitor.visit_unary(self)
 
 class Grouping(Expression):
@@ -130,5 +130,5 @@ class Grouping(Expression):
         """
         return f'{self.expression}'
     
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor):
         return visitor.visit_grouping(self)

@@ -54,6 +54,7 @@ class TokenType(Enum):
     FUNC = auto()
     RETURN = auto()
     END = auto()
+    ECHO = auto()
 
     NEWLINE = auto()
     EOF = auto()

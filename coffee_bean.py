@@ -30,41 +30,45 @@ def main() -> None:
                 
             lexer = Lexer(source)
             tokens = lexer.get_tokens()
-            if lexer.error:
-                return
 
             parser = Parser(tokens)
-            expression = parser.get_expression()
-            if parser.error:
-                return
+            statements = parser.get_statements()
 
             interpreter = Interpreter()
-            print(to_string(interpreter.evaluate(expression)))
-            
+            interpreter.interpret(statements)
+
         except FileNotFoundError:
             print(f"Error: Cannot open file '{args.file}'")
             return
+
+        except LexerError as error:
+            print(error)
+            return
+        
+        except ParserError as error:
+            print(error)
+            return
+
+        except RuntimeError as error:
+            print(error)
+            return
         
     else:
-        print('Coffee Bean interpreter.')
+        print('Coffee Bean interpreter (version 0.1)')
         
         while True:
             try:
-                line = input('> ')
+                line = input('> ') + '\n'
 
                 lexer = Lexer(line)
                 tokens = lexer.get_tokens()
-                if lexer.error:
-                    continue
                 
                 parser = Parser(tokens)
-                expression = parser.get_expression()
-                if parser.error:
-                    continue
+                statements = parser.get_statements()
 
                 interpreter = Interpreter()
-                print(to_string(interpreter.evaluate(expression)))
-            
+                interpreter.interpret(statements)
+
             except EOFError:
                 print()
                 break
@@ -73,8 +77,16 @@ def main() -> None:
                 print()
                 break
 
+            except LexerError as error:
+                print(error)
+                continue
+            
+            except ParserError as error:
+                print(error)
+                continue
+
             except RuntimeError as error:
-                print(f'Error: {error}')
+                print(error)
                 continue
 
 if __name__ == '__main__':

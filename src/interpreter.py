@@ -1,18 +1,72 @@
+from typing import Union, List
+from src.error import *
 from src.token import *
 from src.expression import *
+from src.statement import *
 
-class Interpreter(Visitor):
+class Interpreter(ExpressionVisitor, StatementVisitor):
     """Defines a visitor to evaluate an expression.
-    """
-    def __init__(self):
-        pass
 
-    def evaluate(self, expression: Expression) -> object:
-        return expression.accept(self)
+    Attributes:
+        line: The current line number in the source code.
+    """
+    def __init__(self) -> None:
+        """Constructor.
+        """
+        self.line = 1
+
+    def _error(self, message: str) -> None:
+        """Raises a runtime error.
+
+        Args:
+            message: An error message.
+        """
+        raise RuntimeError(f'Line {self.line}\nError: {message}')
+
+    def _to_number(self, value: object) -> Union[int, float]:
+        """Converts a value to a number.
         
+        """
+        value_type = type(value)
+        if value_type in [int, float]:
+            return value
+            
+        self._error('Expected type int or float')
+        return None
+
+    def _to_boolean(self, value: object) -> bool:
+        """Converts a value to a boolean.
+
+        Args:
+            value: An expression value.
+
+        Returns:
+            If the value is true.
+        """
+        value_type = type(value)
+        if value_type == None:
+            return False
+        elif value_type == bool:
+            return value
+        elif value_type == int:
+            return value != 0
+        elif value_type == float:
+            return value != 0.0
+
+        return False
+
     def visit_literal(self, literal: Literal) -> object:
+        """Evaluates a literal expression.
+        
+        Args:
+            literal: A literal expression.
+
+        Returns:
+            The result of the expression.
+        """
         literal_type = literal.value.token_type
         literal_symbol = literal.value.symbol
+        self.line = literal.value.line
         
         if literal_type == TokenType.NULL:
             return None
@@ -28,19 +82,27 @@ class Interpreter(Visitor):
         return None
 
     def visit_binary(self, binary: BinaryExpression) -> object:
+        """Evaluates a binary expression.
+        
+        Args:
+            binary: A binary expression.
+
+        Returns:
+            The result of the expression.
+        """
         operator_type = binary.operator.token_type
         left_value = self.evaluate(binary.left)
         right_value = self.evaluate(binary.right)
 
         # Arithmetic operations.
         if operator_type == TokenType.PLUS:
-            return left_value + right_value
+            return self._to_number(left_value) + self._to_number(right_value)
         elif operator_type == TokenType.MINUS:
-            return left_value - right_value
+            return self._to_number(left_value) - self._to_number(right_value)
         elif operator_type == TokenType.MULTIPLY:
-            return left_value * right_value
+            return self._to_number(left_value) * self._to_number(right_value)
         elif operator_type == TokenType.DIVIDE:
-            return left_value / right_value
+            return self._to_number(left_value) / self._to_number(right_value)
 
         # Logic operations.
         elif operator_type == TokenType.EQUAL_EQUAL:
@@ -51,17 +113,55 @@ class Interpreter(Visitor):
         return None
 
     def visit_unary(self, unary: UnaryExpression) -> object:
+        """Evaluates a unary expression.
+        
+        Args:
+            unary: A unary expression.
+
+        Returns:
+            The result of the expression.
+        """
         operator_type = unary.operator.token_type
         right_value = self.evaluate(unary.right)
 
         if operator_type == TokenType.PLUS:
-            return +right_value
+            return +self._to_number(right_value)
         elif operator_type == TokenType.MINUS:
-            return -right_value
+            return -self._to_number(right_value)
         elif operator_type == TokenType.BANG:
-            return not right_value
+            return not self._to_boolean(right_value)
 
         return None
 
     def visit_grouping(self, grouping: Grouping) -> object:
+        """Evaluates a grouping expression.
+        
+        Args:
+            grouping: A grouping expression.
+
+        Returns:
+            The result of the expression.
+        """
         return self.evaluate(grouping.expression)
+    
+    def evaluate(self, expression: Expression) -> object:
+        """Evaluates an expression.
+
+        Args:
+            expression: An expression.
+
+        Returns:
+            The result of the expression.
+        """
+        return expression.accept(self)
+
+    def visit_expression(self, expression: ExpressionStatement) -> None:
+        self.evaluate(expression.expression)
+
+    def visit_echo(self, echo: Echo) -> None:
+        value = self.evaluate(echo.expression)
+        print(value)
+
+    def interpret(self, statements: List[Statement]) -> None:
+        for statement in statements:
+            statement.accept(self)

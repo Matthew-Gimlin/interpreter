@@ -1,6 +1,8 @@
 from typing import List, Optional
+from src.error import *
 from src.token import *
 from src.expression import *
+from src.statement import *
 
 class Parser:
     """Defines a parser to convert tokens into an expression.
@@ -9,7 +11,7 @@ class Parser:
         tokens: Input tokens.
         position: The current token index in the input tokens.
         token: The current token in the input tokens.
-        error: If an error occurred while parsing.
+        statements: Output statements.
     """
     def __init__(self, tokens: List[Token]) -> None:
         """Creates a parser.
@@ -20,17 +22,15 @@ class Parser:
         self.tokens = tokens
         self.position = 0
         self.token = None if len(tokens) == 0 else tokens[0]
-        self.error = False
+        self.statements = []
 
     def _error(self, message: str) -> None:
-        """Prints an error message. Puts the parser into an error state.
+        """Raises a parser error.
 
         Args:
             message: An error message.
         """
-        print(f'Line {self.token.line}')
-        print(f'Error: {message}')
-        self.error = True
+        raise ParserError(f'Line {self.token.line}\nError: {message}')
 
     def _match(self, token_types: List[TokenType]) -> bool:
         """Checks if the current token matches any token types.
@@ -76,10 +76,8 @@ class Parser:
             self._eat()
             expression = self._eat_expression()
 
-            # token = self._eat()
             if not self.token or self.token.token_type != TokenType.RIGHT_PARENTHESIS:
                 self._error("Expected ')' after expression.")
-                return Expression()
 
             self._eat()
             return Grouping(expression)
@@ -143,9 +141,40 @@ class Parser:
     def _eat_expression(self) -> Expression:
         return self._eat_equality()
 
-    def get_expression(self) -> Expression:
+    def _eat_expression_statement(self) -> Statement:
         expression = self._eat_expression()
-        if self.error:
-            return Expression()
+
+        if not self._match([TokenType.NEWLINE, TokenType.EOF]):
+            self._error('Expected newline after expression.')
+
+        self._eat()
+        return ExpressionStatement(expression)
+    
+    def _eat_echo_statement(self) -> Statement:
+        expression = self._eat_expression()
+
+        if not self._match([TokenType.NEWLINE, TokenType.EOF]):
+            self._error('Expected newline after value.')
         
-        return expression
+        self._eat()
+        return Echo(expression)
+
+    def _eat_statement(self) -> Statement:
+        if self.token.token_type == TokenType.ECHO:
+            self._eat()
+            return self._eat_echo_statement()
+        
+        return self._eat_expression_statement()
+
+    def get_statements(self) -> List[Statement]:
+        while self.token:
+            if self.token.token_type == TokenType.EOF:
+                break
+            elif self.token.token_type == TokenType.NEWLINE:
+                self._eat()
+                continue
+            
+            statement = self._eat_statement()
+            self.statements.append(statement)
+
+        return self.statements

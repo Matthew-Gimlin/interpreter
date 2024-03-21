@@ -1,4 +1,5 @@
 from typing import List
+from src.error import *
 from src.token import *
 
 ONE_CHARACTER_TYPES = {
@@ -47,6 +48,7 @@ KEYWORD_TYPES = {
     'func': TokenType.FUNC,
     'return': TokenType.RETURN,
     'end': TokenType.END,
+    'echo': TokenType.ECHO,
 }
 
 class Lexer:
@@ -58,7 +60,6 @@ class Lexer:
         character: The current character in the source code.
         line: The current line number in the source code.
         tokens: Output tokens.
-        error: If an error occurred while lexing.
     """
     def __init__(self, source: str) -> None:
         """Creates a lexer.
@@ -71,7 +72,6 @@ class Lexer:
         self.character = source[0:1]
         self.line = 1
         self.tokens = []
-        self.error = False
 
     def _add_token(self, token_type: TokenType, symbol: str = '') -> None:
         """Adds a token to the list of output tokens.
@@ -83,14 +83,12 @@ class Lexer:
         self.tokens.append(Token(token_type, self.line, symbol))
 
     def _error(self, message: str) -> None:
-        """Prints an error message. Puts the lexer into an error state.
+        """Raises a lexer error.
 
         Args:
             message: An error message.
         """
-        print(f'Line {self.line}')
-        print(f'Error: {message}')
-        self.error = True
+        raise LexerError(f'Line {self.line}\nError: {message}')
 
     def _eat(self) -> str:
         """Eats one character.
@@ -192,9 +190,6 @@ class Lexer:
             The output tokens.
         """
         while self.character:
-            if self.error:
-                return []
-
             # Eat whitespace until the next potential token.
             self._eat_space()
             
