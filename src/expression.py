@@ -15,6 +15,9 @@ class ExpressionVisitor:
     def visit_grouping(self, grouping):
         pass
 
+    def visit_assignment(self, assignment):
+        pass
+
 class Expression:
     """Defines an expression base class.
     """
@@ -132,3 +135,31 @@ class Grouping(Expression):
     
     def accept(self, visitor):
         return visitor.visit_grouping(self)
+
+class Assignment(Expression):
+    """Defines a container for an assigment.
+    
+    Attributes:
+        name: The identifier token with the variable name.
+        value: The value to assign to the variable.
+    """
+    def __init__(self, name: Token, value: Expression) -> None:
+        """Constructor.
+
+        Args:
+            name: An identifier token with a variable name.
+            value: An value to assign to the variable.
+        """
+        self.name = name
+        self.value = value
+
+    def __str__(self) -> str:
+        """Formats the assignment expression as a strign.
+
+        Returns:
+            The variable name and value.
+        """
+        return f'(EQUAL {self.name} {self.value})'
+
+    def accept(self, visitor):
+        return visitor.visit_assignment(self)

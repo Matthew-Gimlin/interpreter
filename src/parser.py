@@ -32,6 +32,15 @@ class Parser:
         """
         raise ParserError(f'Line {self.token.line}\nError: {message}')
 
+    # TODO
+    def _recover(self) -> Expression:
+        """Recovers from an error.
+        
+        Returns:
+            The next valid statement.
+        """
+        pass
+
     def _match(self, token_types: List[TokenType]) -> bool:
         """Checks if the current token matches any token types.
         
@@ -69,7 +78,8 @@ class Parser:
                         TokenType.STRING,
                         TokenType.CHARACTER,
                         TokenType.INTEGER,
-                        TokenType.FLOAT]):
+                        TokenType.FLOAT,
+                        TokenType.IDENTIFIER]):
             return Literal(self._eat())
 
         if self._match([TokenType.LEFT_PARENTHESIS]):
@@ -137,8 +147,22 @@ class Parser:
 
         return expression
 
+    def _eat_assignment(self) -> Expression:
+        expression = self._eat_equality()
+
+        if self._match([TokenType.EQUAL]):
+            equals = self._eat()
+            value = self._eat_assignment()
+
+            if isinstance(expression, Literal):
+                return Assignment(expression.value, value)
+
+            self._error('Invalid assignment target.')
+
+        return expression
+
     def _eat_expression(self) -> Expression:
-        return self._eat_equality()
+        return self._eat_assignment()
 
     def _eat_expression_statement(self) -> Statement:
         expression = self._eat_expression()

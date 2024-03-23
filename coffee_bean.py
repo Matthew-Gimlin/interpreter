@@ -66,7 +66,10 @@ def main() -> None:
                 parser = Parser(tokens)
                 statements = parser.get_statements()
 
-                interpreter = Interpreter(print_expressions=True)
+                # for s in statements:
+                #     print(s)
+                
+                interpreter = Interpreter()
                 interpreter.interpret(statements)
 
             except EOFError:

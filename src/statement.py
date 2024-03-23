@@ -1,3 +1,4 @@
+from typing import Optional
 from src.expression import *
 
 class StatementVisitor:
@@ -7,6 +8,9 @@ class StatementVisitor:
         pass
 
     def visit_echo(self, echo):
+        pass
+
+    def visit_variable(self, variable):
         pass
 
 class Statement:
@@ -34,3 +38,19 @@ class Echo(Statement):
 
     def accept(self, visitor):
         return visitor.visit_echo(self)
+
+class Variable(Statement):
+    def __init__(self,
+                 name: Token,
+                 initializer: Optional[Expression] = None) -> None:
+        self.name = name
+        self.initializer = initializer
+
+    def __str__(self) -> str:
+        if self.initializer:
+            return f'{self.name} = {self.initializer}'
+        
+        return f'{self.name}'
+
+    def accept(self, visitor):
+        return visitor.visit_variable(self)

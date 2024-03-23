@@ -3,17 +3,19 @@ from src.error import *
 from src.token import *
 from src.expression import *
 from src.statement import *
+from src.environment import *
 
 class Interpreter(ExpressionVisitor, StatementVisitor):
     """Defines a visitor to evaluate an expression.
 
     Attributes:
+        environment: The interpreter's runtime environment.
         line: The current line number in the source code.
     """
-    def __init__(self, print_expressions: bool = False) -> None:
+    def __init__(self) -> None:
         """Constructor.
         """
-        self.print_expressions = print_expressions
+        self.environment = Environment()
         self.line = 1
 
     def _error(self, message: str) -> None:
@@ -57,6 +59,14 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             return value != 0.0
         
         return False
+    
+    def _to_string(self, value: object) -> str:
+        if value == None:
+            return 'null'
+        elif type(value) == bool:
+            return 'true' if value else 'false'
+        else:
+            return str(value)
 
     def visit_literal(self, literal: Literal) -> object:
         """Evaluates a literal expression.
@@ -85,6 +95,8 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             return int(literal_symbol)
         elif literal_type == TokenType.FLOAT:
             return float(literal_symbol)
+        elif literal_type == TokenType.IDENTIFIER:
+            return self.environment.get(literal.value)
 
         return None
 
@@ -116,6 +128,14 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             return left_value == right_value
         elif operator_type == TokenType.BANG_EQUAL:
             return left_value != right_value
+        elif operator_type == TokenType.LESS:
+            return left_value < right_value
+        elif operator_type == TokenType.LESS_EQUAL:
+            return left_value <= right_value
+        elif operator_type == TokenType.GREATER:
+            return left_value > right_value
+        elif operator_type == TokenType.GREATER_EQUAL:
+            return left_value >= right_value
 
         return None
 
@@ -150,6 +170,20 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             The result of the expression.
         """
         return self.evaluate(grouping.expression)
+
+    def visit_assignment(self, assignment: Assignment) -> object:
+        """Evaluates an assignment expression.
+        
+        Args:
+            assignment: An assignment expression.
+
+        Returns:
+            The assigned value.
+        """
+        value = self.evaluate(assignment.value)
+        self.environment.add(assignment.name, value)
+        
+        return value
     
     def evaluate(self, expression: Expression) -> object:
         """Evaluates an expression.
@@ -164,12 +198,17 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
     def visit_expression(self, expression: ExpressionStatement) -> None:
         value = self.evaluate(expression.expression)
-        if self.print_expressions:
-            print(value)
 
     def visit_echo(self, echo: Echo) -> None:
         value = self.evaluate(echo.expression)
-        print(value)
+        print(self._to_string(value))
+
+    def visit_variable(self, variable: Variable) -> None:
+        value = None
+        if variable.initializer:
+            value = self.evaluate(variable.initializer)
+
+        self.environment.add(variable.name, value)
 
     def interpret(self, statements: List[Statement]) -> None:
         for statement in statements:
