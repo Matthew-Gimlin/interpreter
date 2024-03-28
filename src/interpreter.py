@@ -1,4 +1,5 @@
-from typing import Union, List
+from __future__ import annotations
+from typing import Union, Optional, List
 from src.error import *
 from src.token import *
 from src.expression import *
@@ -12,10 +13,10 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         environment: The interpreter's runtime environment.
         line: The current line number in the source code.
     """
-    def __init__(self) -> None:
+    def __init__(self, environment: Optinal[Environment] = None) -> None:
         """Constructor.
         """
-        self.environment = Environment()
+        self.environment = environment or Environment()
         self.line = 1
 
     def _error(self, message: str) -> None:
@@ -100,7 +101,7 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
         return None
 
-    def visit_binary(self, binary: BinaryExpression) -> object:
+    def visit_binary(self, binary: Binary) -> object:
         """Evaluates a binary expression.
         
         Args:
@@ -139,7 +140,7 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
         return None
 
-    def visit_unary(self, unary: UnaryExpression) -> object:
+    def visit_unary(self, unary: Unary) -> object:
         """Evaluates a unary expression.
         
         Args:
@@ -156,6 +157,8 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         elif operator_type == TokenType.MINUS:
             return -self._to_number(right_value)
         elif operator_type == TokenType.BANG:
+            return not self._to_boolean(right_value)
+        elif operator_type == TokenType.NOT:
             return not self._to_boolean(right_value)
 
         return None
@@ -203,12 +206,19 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         value = self.evaluate(echo.expression)
         print(self._to_string(value))
 
-    def visit_variable(self, variable: Variable) -> None:
-        value = None
-        if variable.initializer:
-            value = self.evaluate(variable.initializer)
+    def _execute_block(self,
+                       statements: List[Statement],
+                       environment: Environment) -> None:
+        enclosing = self.environment
+        
+        for statement in statements:
+            self.environment = environment
+            statement.accept(self)
 
-        self.environment.add(variable.name, value)
+        self.environment = enclosing
+
+    def visit_block(self, block: Block) -> None:
+        self._execute_block(block.statements, Environment(self.environment))
 
     def interpret(self, statements: List[Statement]) -> None:
         for statement in statements:

@@ -47,6 +47,7 @@ KEYWORD_TYPES = {
     'for': TokenType.FOR,
     'func': TokenType.FUNC,
     'return': TokenType.RETURN,
+    'do': TokenType.DO,
     'end': TokenType.END,
     'echo': TokenType.ECHO,
 }
@@ -207,7 +208,6 @@ class Lexer:
 
             # Eat newlines.
             elif self.character == '\n':
-                self._add_token(TokenType.NEWLINE)
                 self.line += 1
                 self._eat()
 

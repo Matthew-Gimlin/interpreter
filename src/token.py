@@ -53,10 +53,10 @@ class TokenType(Enum):
     FOR = auto()
     FUNC = auto()
     RETURN = auto()
+    DO = auto()
     END = auto()
     ECHO = auto()
 
-    NEWLINE = auto()
     EOF = auto()
 
 class Token:

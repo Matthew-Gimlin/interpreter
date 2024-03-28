@@ -72,6 +72,11 @@ class Parser:
         return eaten
 
     def _eat_primary(self) -> Expression:
+        """Eats literals and grouping expressions.
+        
+        Returns:
+            The eaten expression.
+        """
         if self._match([TokenType.NULL,
                         TokenType.FALSE,
                         TokenType.TRUE,
@@ -95,12 +100,18 @@ class Parser:
         self._error('Expected expression.')
 
     def _eat_unary(self) -> Expression:
+        """Eats unary expressions.
+        
+        Returns:
+            The eaten unary expression.
+        """
         while self._match([TokenType.BANG,
+                           TokenType.NOT,
                            TokenType.PLUS,
                            TokenType.MINUS]):
             operator = self._eat()
             right = self._eat_unary()
-            return UnaryExpression(operator, right)
+            return Unary(operator, right)
 
         return self._eat_primary()
 
@@ -110,7 +121,7 @@ class Parser:
         while self._match([TokenType.MULTIPLY, TokenType.DIVIDE]):
             operator = self._eat()
             right = self._eat_unary()
-            expression = BinaryExpression(expression, operator, right)
+            expression = Binary(expression, operator, right)
 
         return expression
 
@@ -120,7 +131,7 @@ class Parser:
         while self._match([TokenType.PLUS, TokenType.MINUS]):
             operator = self._eat()
             right = self._eat_factor()
-            expression = BinaryExpression(expression, operator, right)
+            expression = Binary(expression, operator, right)
 
         return expression
 
@@ -133,7 +144,7 @@ class Parser:
                            TokenType.GREATER_EQUAL]):
             operator = self._eat()
             right = self._eat_term()
-            expression = BinaryExpression(expression, operator, right)
+            expression = Binary(expression, operator, right)
 
         return expression
 
@@ -143,7 +154,7 @@ class Parser:
         while self._match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL]):
             operator = self._eat()
             right = self._eat_comparison()
-            expression = BinaryExpression(expression, operator, right)
+            expression = Binary(expression, operator, right)
 
         return expression
 
@@ -167,25 +178,33 @@ class Parser:
     def _eat_expression_statement(self) -> Statement:
         expression = self._eat_expression()
 
-        if not self._match([TokenType.NEWLINE, TokenType.EOF]):
-            self._error('Expected newline after expression.')
-
-        self._eat()
         return ExpressionStatement(expression)
     
     def _eat_echo_statement(self) -> Statement:
         expression = self._eat_expression()
-
-        if not self._match([TokenType.NEWLINE, TokenType.EOF]):
-            self._error('Expected newline after value.')
         
-        self._eat()
         return Echo(expression)
+    
+    def _eat_block(self) -> Statement:
+        statements = []
+
+        while not self._match([TokenType.END, TokenType.EOF]):
+            statements.append(self._eat_statement())
+
+        if not self._match([TokenType.END]):
+            self._error('Expected `end` after block.')
+
+        self._eat() # Eating closing end keyword.
+        return Block(statements)
 
     def _eat_statement(self) -> Statement:
-        if self.token.token_type == TokenType.ECHO:
+        if self._match([TokenType.ECHO]):
             self._eat()
             return self._eat_echo_statement()
+        
+        elif self._match([TokenType.DO]):
+            self._eat()
+            return self._eat_block()
         
         return self._eat_expression_statement()
 
@@ -193,11 +212,6 @@ class Parser:
         while self.token:
             if self.token.token_type == TokenType.EOF:
                 break
-
-            # Eat an empty statement.
-            elif self.token.token_type == TokenType.NEWLINE:
-                self._eat()
-                continue
             
             statement = self._eat_statement()
             self.statements.append(statement)

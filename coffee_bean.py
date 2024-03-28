@@ -4,6 +4,7 @@ import argparse
 from src.error import *
 from src.lexer import Lexer
 from src.parser import Parser
+from src.environment import Environment
 from src.interpreter import Interpreter
 
 def to_string(value: object) -> str:
@@ -55,10 +56,11 @@ def main() -> None:
         
     else:
         print('Coffee Bean interpreter (version 0.1)')
+        environment = Environment()
         
         while True:
             try:
-                line = input('> ') + '\n'
+                line = input('> ')
 
                 lexer = Lexer(line)
                 tokens = lexer.get_tokens()
@@ -69,7 +71,7 @@ def main() -> None:
                 # for s in statements:
                 #     print(s)
                 
-                interpreter = Interpreter()
+                interpreter = Interpreter(environment)
                 interpreter.interpret(statements)
 
             except EOFError:

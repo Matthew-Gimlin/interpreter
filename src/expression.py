@@ -1,27 +1,28 @@
+from __future__ import annotations
 from src.token import *
 
 class ExpressionVisitor:
     """Defines an expression visitor base class.
     """
-    def visit_literal(self, literal):
+    def visit_literal(self, literal: Literal):
         pass
 
-    def visit_binary(self, binary):
+    def visit_binary(self, binary: Binary):
         pass
 
-    def visit_unary(self, unary):
+    def visit_unary(self, unary: Unary):
         pass
 
-    def visit_grouping(self, grouping):
+    def visit_grouping(self, grouping: Grouping):
         pass
 
-    def visit_assignment(self, assignment):
+    def visit_assignment(self, assignment: Assignment):
         pass
 
 class Expression:
     """Defines an expression base class.
     """
-    def accept(self, visitor):
+    def accept(self, visitor: ExpressionVisitor):
         pass
 
 class Literal(Expression):
@@ -46,10 +47,10 @@ class Literal(Expression):
         """
         return f'{self.value}'
 
-    def accept(self, visitor):
+    def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_literal(self)
 
-class BinaryExpression(Expression):
+class Binary(Expression):
     """Defines a container for a binary expression.
 
     Attributes:
@@ -80,10 +81,10 @@ class BinaryExpression(Expression):
         """
         return f'({self.operator} {self.left} {self.right})'
 
-    def accept(self, visitor):
+    def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_binary(self)
 
-class UnaryExpression(Expression):
+class Unary(Expression):
     """Defines a container for a unary expression.
 
     Attributes:
@@ -108,7 +109,7 @@ class UnaryExpression(Expression):
         """
         return f'({self.operator} {self.right})'
     
-    def accept(self, visitor):
+    def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_unary(self)
 
 class Grouping(Expression):
@@ -133,7 +134,7 @@ class Grouping(Expression):
         """
         return f'{self.expression}'
     
-    def accept(self, visitor):
+    def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_grouping(self)
 
 class Assignment(Expression):
@@ -161,5 +162,5 @@ class Assignment(Expression):
         """
         return f'(EQUAL {self.name} {self.value})'
 
-    def accept(self, visitor):
+    def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_assignment(self)
