@@ -21,8 +21,15 @@ def main() -> None:
                             nargs='?',
                             default=None,
                             help='A source file.')
+    arg_parser.add_argument('-d',
+                            '--debug',
+                            action='store_true',
+                            help='Enable debug output.')
 
     args = arg_parser.parse_args()
+    if args.debug:
+        print('Debug output enabled.')
+    
     if args.file:
         source = ''
         try:
@@ -31,10 +38,22 @@ def main() -> None:
                 
             lexer = Lexer(source)
             tokens = lexer.get_tokens()
+            if args.debug:
+                print('Tokens:')
+                for token in tokens:
+                    print(token)
+                print()
 
             parser = Parser(tokens)
             statements = parser.get_statements()
+            if args.debug:
+                print('Statements:')
+                for statement in statements:
+                    print(statement)
+                print()
 
+            if args.debug:
+                print('Output:')
             interpreter = Interpreter()
             interpreter.interpret(statements)
 
@@ -64,13 +83,22 @@ def main() -> None:
 
                 lexer = Lexer(line)
                 tokens = lexer.get_tokens()
+                if args.debug:
+                    print('Tokens:')
+                    for token in tokens:
+                        print(token)
+                    print()
                 
                 parser = Parser(tokens)
                 statements = parser.get_statements()
+                if args.debug:
+                    print('Statements:')
+                    for statement in statements:
+                        print(statement)
+                    print()
 
-                # for s in statements:
-                #     print(s)
-                
+                if args.debug:
+                    print('Output:')
                 interpreter = Interpreter(environment)
                 interpreter.interpret(statements)
 
