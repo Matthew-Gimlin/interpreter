@@ -158,8 +158,28 @@ class Parser:
 
         return expression
 
-    def _eat_assignment(self) -> Expression:
+    def _eat_and(self) -> Expression:
         expression = self._eat_equality()
+
+        while self._match([TokenType.AND]):
+            operator = self._eat()
+            right = self._eat_equality()
+            expression = Logical(expression, operator, right)
+
+        return expression
+
+    def _eat_or(self) -> Expression:
+        expression = self._eat_and()
+
+        if self._match([TokenType.OR]):
+            operator = self._eat()
+            right = self._eat_and()
+            expression = Logical(expression, operator, right)
+
+        return expression
+
+    def _eat_assignment(self) -> Expression:
+        expression = self._eat_or()
 
         if self._match([TokenType.EQUAL]):
             equals = self._eat()
@@ -197,6 +217,17 @@ class Parser:
         self._eat() # Eating closing end keyword.
         return Block(statements)
 
+    def _eat_if_statement(self) -> Statement:
+        condition = self._eat_expression()
+
+        then = self._eat_statement()
+        _else = None
+        if self._match([TokenType.ELSE]):
+            self._eat()
+            _else = self._eat_statement()
+
+        return If(condition, then, _else)
+
     def _eat_statement(self) -> Statement:
         if self._match([TokenType.ECHO]):
             self._eat()
@@ -205,6 +236,10 @@ class Parser:
         elif self._match([TokenType.DO]):
             self._eat()
             return self._eat_block()
+
+        elif self._match([TokenType.IF]):
+            self._eat()
+            return self._eat_if_statement()
         
         return self._eat_expression_statement()
 

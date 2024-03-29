@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Optional
 from src.expression import *
 
 class StatementVisitor:
@@ -12,6 +12,9 @@ class StatementVisitor:
         pass
 
     def visit_block(self, block: Block):
+        pass
+
+    def visit_if(self, _if: If):
         pass
 
 class Statement:
@@ -94,3 +97,24 @@ class Block(Statement):
 
     def accept(self, visitor: StatementVisitor):
         return visitor.visit_block(self)
+
+class If(Statement):
+    """Defines a container for an if statement.
+
+    """
+    def __init__(self,
+                 condition: Expression,
+                 then: Statement,
+                 _else: Optional[Statement] = None) -> None:
+        self.condition = condition
+        self.then = then
+        self._else = _else
+
+    def __str__(self) -> None:
+        if self._else:
+            return f'if {self.condition}\n{self.then}\nelse {self._else}'
+        
+        return f'if {self.condition}\n{self.then}'
+
+    def accept(self, visitor: StatementVisitor):
+        return visitor.visit_if(self)

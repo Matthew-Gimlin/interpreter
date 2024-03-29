@@ -20,11 +20,11 @@ def main() -> None:
     arg_parser.add_argument('file',
                             nargs='?',
                             default=None,
-                            help='A source file.')
+                            help='a source file')
     arg_parser.add_argument('-d',
                             '--debug',
                             action='store_true',
-                            help='Enable debug output.')
+                            help='enable debug output')
 
     args = arg_parser.parse_args()
     if args.debug:

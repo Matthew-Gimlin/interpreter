@@ -1,6 +1,6 @@
 # interpreter
 
-An tree-walk interpreter for a custom programming language named Coffee Bean.
+A tree-walk interpreter for a custom programming language named Coffee Bean.
 
 ## Running the Interpreter
 
@@ -23,3 +23,7 @@ Coffee Bean interpreter (version 0.1)
 Hello, world!
 ```
 
+## Resources
+
+I used the book [Crafting Interpreters](https://craftinginterpreters.com/) to
+write this interpreter.

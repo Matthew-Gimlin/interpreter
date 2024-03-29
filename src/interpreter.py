@@ -15,6 +15,9 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
     """
     def __init__(self, environment: Optinal[Environment] = None) -> None:
         """Constructor.
+
+        Args:
+            environment: 
         """
         self.environment = environment or Environment()
         self.line = 1
@@ -27,9 +30,20 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         """
         raise RuntimeError(f'Line {self.line}\nError: {message}')
 
+    def _check_number(self, value: obect) -> Union[int, float]:
+        if type(value) in [int, float]:
+            return value
+        
+        self._error('Expected type `int` or `float`.')
+
     def _to_number(self, value: object) -> Union[int, float]:
         """Converts a value to a number.
         
+        Args:
+            value: An expression value.
+
+        Returns:
+            A number value.
         """
         value_type = type(value)
         if value_type in [int, float]:
@@ -45,7 +59,7 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             value: An expression value.
 
         Returns:
-            If the value is true.
+            If the value is truthy.
         """
         value_type = type(value)
         if value_type == None:
@@ -187,6 +201,19 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         self.environment.add(assignment.name, value)
         
         return value
+
+    def visit_logical(self, logical: Logical) -> object:
+        operator_type = logical.operator.token_type
+        left_value = self.evaluate(logical.left)
+
+        if operator_type == TokenType.OR:
+            if self._to_boolean(left_value):
+                return left_value
+        elif operator_type == TokenType.AND:
+            if not self._to_boolean(left_value):
+                return left_value
+
+        return self.evaluate(logical.right)
     
     def evaluate(self, expression: Expression) -> object:
         """Evaluates an expression.
@@ -205,6 +232,12 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
     def visit_echo(self, echo: Echo) -> None:
         value = self.evaluate(echo.expression)
         print(self._to_string(value))
+
+    def visit_if(self, _if: If) -> None:
+        if self._to_boolean(self.evaluate(_if.condition)):
+            _if.then.accept(self)
+        elif _if._else:
+            _if._else.accept(self)
 
     def _execute_block(self,
                        statements: List[Statement],

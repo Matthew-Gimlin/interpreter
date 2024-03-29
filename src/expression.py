@@ -19,6 +19,9 @@ class ExpressionVisitor:
     def visit_assignment(self, assignment: Assignment):
         pass
 
+    def visit_logical(self, logical: Logical):
+        pass
+
 class Expression:
     """Defines an expression base class.
     """
@@ -164,3 +167,37 @@ class Assignment(Expression):
 
     def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_assignment(self)
+
+class Logical(Expression):
+    """Defines a container for a logical expression.
+
+    Attributes:
+        left: The expression on the left side of the operator.
+        operator: The binary operator.
+        right: The expression on the right side of the operator.
+    """
+    def __init__(self,
+                 left: Expression,
+                 operator: Token,
+                 right: Expression) -> None:
+        """Constructor.
+        
+        Args:
+            left: An expression on the left side of the operator.
+            operator: A binary operator.
+            right: An expression on the right side of the operator.
+        """
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    def __str__(self) -> str:
+        """Formats the logical expression as a string.
+
+        Returns:
+            The operator and the left and right expressions.
+        """
+        return f'({self.operator} {self.left} {self.right})'
+
+    def accept(self, visitor: ExpressionVisitor):
+        return visitor.visit_logical(self)
