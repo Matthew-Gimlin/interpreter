@@ -17,6 +17,9 @@ class StatementVisitor:
     def visit_if(self, _if: If):
         pass
 
+    def visit_while(self, _while: While):
+        pass
+
 class Statement:
     """Defines a statement base class.
     """
@@ -118,3 +121,17 @@ class If(Statement):
 
     def accept(self, visitor: StatementVisitor):
         return visitor.visit_if(self)
+
+class While(Statement):
+    """Defines a container for a while statement.
+
+    """
+    def __init__(self, condition: Expression, body: Statement) -> None:
+        self.condition = condition
+        self.body = body
+
+    def __str__(self) -> str:
+        return f'while {self.condition}\n{self.body}'
+
+    def accept(self, visitor: StatementVisitor):
+        return visitor.visit_while(self)

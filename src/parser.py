@@ -50,11 +50,10 @@ class Parser:
         Returns:
             If the current token matches one of the token types.
         """
-        for token_type in token_types:
-            if self.token and self.token.token_type == token_type:
-                return True
-        
-        return False
+        if not self.token:
+            return False
+
+        return self.token.token_type in token_types
 
     def _eat(self) -> Optional[Token]:
         """Eats a single token.
@@ -228,6 +227,12 @@ class Parser:
 
         return If(condition, then, _else)
 
+    def _eat_while_statement(self) -> Statement:
+        condition = self._eat_expression()
+        body = self._eat_statement()
+
+        return While(condition, body)
+
     def _eat_statement(self) -> Statement:
         if self._match([TokenType.ECHO]):
             self._eat()
@@ -240,6 +245,10 @@ class Parser:
         elif self._match([TokenType.IF]):
             self._eat()
             return self._eat_if_statement()
+
+        elif self._match([TokenType.WHILE]):
+            self._eat()
+            return self._eat_while_statement()
         
         return self._eat_expression_statement()
 

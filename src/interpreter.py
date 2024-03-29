@@ -214,7 +214,7 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
                 return left_value
 
         return self.evaluate(logical.right)
-    
+
     def evaluate(self, expression: Expression) -> object:
         """Evaluates an expression.
 
@@ -238,6 +238,10 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             _if.then.accept(self)
         elif _if._else:
             _if._else.accept(self)
+            
+    def visit_while(self, _while: While) -> None:
+        while self.evaluate(_while.condition):
+            _while.body.accept(self)
 
     def _execute_block(self,
                        statements: List[Statement],
