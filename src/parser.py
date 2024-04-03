@@ -98,6 +98,33 @@ class Parser:
 
         self._error('Expected expression.')
 
+    def _finish_call(self, callee: Expression) -> Expression:
+        arguments = []
+        if not self._match([TokenType.RIGHT_PARENTHESIS]):
+            while True:
+                arguments.append(self._eat_expression())
+                if not self._match([TokenType.COMMA]):
+                    break
+                self._eat() # Eat the comma.
+
+        if not self._match([TokenType.RIGHT_PARENTHESIS]):
+            self._error("Expected ')' after arguments.")
+
+        right_parenthesis = self._eat()
+        return Call(callee, right_parenthesis, arguments)
+
+    def _eat_call(self) -> Expression:
+        expression = self._eat_primary()
+
+        while True:
+            if self._match([TokenType.LEFT_PARENTHESIS]):
+                self._eat()
+                expression = self._finish_call(expression)
+            else:
+                break
+
+        return expression
+
     def _eat_unary(self) -> Expression:
         """Eats unary expressions.
         
@@ -112,7 +139,7 @@ class Parser:
             right = self._eat_unary()
             return Unary(operator, right)
 
-        return self._eat_primary()
+        return self._eat_call()
 
     def _eat_factor(self) -> Expression:
         expression = self._eat_unary()
@@ -194,17 +221,17 @@ class Parser:
     def _eat_expression(self) -> Expression:
         return self._eat_assignment()
 
-    def _eat_expression_statement(self) -> Statement:
+    def _eat_expression_statement(self) -> ExpressionStatement:
         expression = self._eat_expression()
 
         return ExpressionStatement(expression)
     
-    def _eat_echo_statement(self) -> Statement:
+    def _eat_echo_statement(self) -> Echo:
         expression = self._eat_expression()
         
         return Echo(expression)
     
-    def _eat_block(self) -> Statement:
+    def _eat_block(self) -> Block:
         statements = []
 
         while not self._match([TokenType.END, TokenType.EOF]):
@@ -216,7 +243,7 @@ class Parser:
         self._eat() # Eating closing end keyword.
         return Block(statements)
 
-    def _eat_if_statement(self) -> Statement:
+    def _eat_if_statement(self) -> If:
         condition = self._eat_expression()
 
         then = self._eat_statement()
@@ -227,11 +254,48 @@ class Parser:
 
         return If(condition, then, _else)
 
-    def _eat_while_statement(self) -> Statement:
+    def _eat_while_statement(self) -> While:
         condition = self._eat_expression()
         body = self._eat_statement()
 
         return While(condition, body)
+
+    def _eat_function(self) -> Function:
+        if not self._match([TokenType.IDENTIFIER]):
+            self._error('Expected function name.')
+        name = self._eat()
+
+        if not self._match([TokenType.LEFT_PARENTHESIS]):
+            self._error("Expected '(' after function name.")
+        self._eat() # Eat the left parenthesis.
+        
+        parameters = []
+        if not self._match([TokenType.RIGHT_PARENTHESIS]):
+            while True:
+                if not self._match([TokenType.IDENTIFIER]):
+                    self._error('Expected parameter name.')
+                    
+                parameters.append(self._eat())
+                if not self._match([TokenType.COMMA]):
+                    break
+                self._eat() # Eat the comma.
+        
+        if not self._match([TokenType.RIGHT_PARENTHESIS]):
+            self._error("Expected ')' after parameters.")
+        self._eat() # Eat the right parenthesis.
+
+        if not self._match([TokenType.DO]):
+            self._error('Expected `do` before function body.')
+        self._eat() # Eat the do keyword.
+
+        block = self._eat_block()
+        return Function(name, parameters, block.statements)
+
+    def _eat_return(self) -> Return:
+        keyword = self._eat()
+        value = self._eat_expression()
+
+        return Return(keyword, value)
 
     def _eat_statement(self) -> Statement:
         if self._match([TokenType.ECHO]):
@@ -249,6 +313,14 @@ class Parser:
         elif self._match([TokenType.WHILE]):
             self._eat()
             return self._eat_while_statement()
+
+        elif self._match([TokenType.FUNCTION]):
+            self._eat()
+            return self._eat_function()
+
+        elif self._match([TokenType.RETURN]):
+            # self._eat()
+            return self._eat_return()
         
         return self._eat_expression_statement()
 

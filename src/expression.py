@@ -22,6 +22,9 @@ class ExpressionVisitor:
     def visit_logical(self, logical: Logical):
         pass
 
+    def visit_call(self, call: Call):
+        pass
+
 class Expression:
     """Defines an expression base class.
     """
@@ -201,3 +204,37 @@ class Logical(Expression):
 
     def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_logical(self)
+
+class Call(Expression):
+    """Defines a container for a function call expression.
+    
+    Attributes:
+        callee: The function callee expression.
+        right_parenthesis: The closing parenthesis for error reporting.
+        arguments: The function arguments.
+    """
+    def __init__(self,
+                 callee: Expression,
+                 right_parenthesis: Token,
+                 arguments: List[Expression]) -> None:
+        """Constructor.
+        
+        Args:
+            callee: A function callee expression.
+            right_parenthesis: A closing parentheses.
+            arguments: Function arguments.
+        """
+        self.callee = callee
+        self.right_parenthesis = right_parenthesis
+        self.arguments = arguments
+
+    def __str__(self) -> str:
+        """Formats the function call as a string.
+
+        Returns:
+            The callee expression and the arguments.
+        """
+        return f'{self.callee}({",".join(self.arguments)})'
+
+    def accept(self, visitor: ExpressionVisitor):
+        return visitor.visit_call(self)

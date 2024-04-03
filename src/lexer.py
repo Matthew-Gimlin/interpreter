@@ -45,7 +45,7 @@ KEYWORD_TYPES = {
     'else': TokenType.ELSE,
     'while': TokenType.WHILE,
     'for': TokenType.FOR,
-    'func': TokenType.FUNC,
+    'function': TokenType.FUNCTION,
     'return': TokenType.RETURN,
     'do': TokenType.DO,
     'end': TokenType.END,

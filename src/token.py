@@ -51,7 +51,7 @@ class TokenType(Enum):
     ELSE = auto()
     WHILE = auto()
     FOR = auto()
-    FUNC = auto()
+    FUNCTION = auto()
     RETURN = auto()
     DO = auto()
     END = auto()

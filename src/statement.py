@@ -20,6 +20,12 @@ class StatementVisitor:
     def visit_while(self, _while: While):
         pass
 
+    def visit_function(self, function: Function):
+        pass
+
+    def visit_return(self, _return: Return):
+        pass
+
 class Statement:
     """Defines a statement base class.
     """
@@ -135,3 +141,53 @@ class While(Statement):
 
     def accept(self, visitor: StatementVisitor):
         return visitor.visit_while(self)
+
+class Function(Statement):
+    """Defines a container for a function declaration statement.
+    
+    Attributes:
+        name: The function identifier.
+        parameters: The function's parameters.
+        body: The function's body.
+    """
+    def __init__(self,
+                 name: Token,
+                 parameters: List[Token],
+                 body: List[Statement]) -> None:
+        self.name = name
+        self.parameters = parameters
+        self.body = body
+
+    def __str__(self) -> str:
+        return f'{self.name}({", ".join(self.parameters)})\n{self.body}'
+
+    def accept(self, visitor: StatementVisitor):
+        return visitor.visit_function(self)
+
+class Return(Statement):
+    """Defines a container for a return statement.
+    
+    Attributes:
+        keyword: The return keyword.
+        value: The value to return.
+    """
+    def __init__(self, keyword: Token, value: Expression) -> None:
+        """Constructor.
+
+        Args:
+            keyword: A return keyword.
+            value: A value to return.
+        """
+        self.keyword = keyword
+        self.value = value
+
+    def __str__(self) -> str:
+        """Formats the return statement as a string.
+
+        Returns:
+            The return value.
+        """
+        return f'return {self.value}'
+
+    def accept(self, visitor: StatementVisitor):
+        return visitor.visit_return(self)

@@ -5,6 +5,7 @@ from src.token import *
 from src.expression import *
 from src.statement import *
 from src.environment import *
+from src.language_object import *
 
 class Interpreter(ExpressionVisitor, StatementVisitor):
     """Defines a visitor to evaluate an expression.
@@ -20,6 +21,11 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             environment: 
         """
         self.environment = environment or Environment()
+        
+        self.globals = Environment()
+        self.globals.add(Token(TokenType.IDENTIFIER, 0, 'clock'),
+                         CoffeeBeanClock())
+        
         self.line = 1
 
     def _error(self, message: str) -> None:
@@ -215,6 +221,25 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
         return self.evaluate(logical.right)
 
+    def visit_call(self, call: Call) -> object:
+        callee_value = self.evaluate(call.callee)
+        
+        argument_values = []
+        for argument in call.arguments:
+            argument_values.append(self.evaluate(argument))
+
+        if not isinstance(callee_value, CoffeeBeanCallable):
+            self._error('Can only call functions.')
+
+        function = callee_value
+        if len(call.arguments) != function.argument_count:
+            self._error(
+                f'Expected {function.argument_count} ' \
+                f'arguments but got {len(call.arguments)}.'
+            )
+
+        return function.call(self, argument_values)
+
     def evaluate(self, expression: Expression) -> object:
         """Evaluates an expression.
 
@@ -256,6 +281,15 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
     def visit_block(self, block: Block) -> None:
         self._execute_block(block.statements, Environment(self.environment))
+
+    def visit_function(self, function: Function) -> None:
+        coffee_bean_function = CoffeeBeanFunction(function)
+        self.environment.add(function.name, coffee_bean_function)
+
+    def visit_return(self, _return: Return) -> None:
+        value = self.evaluate(_return.value)
+
+        raise ReturnError(value)
 
     def interpret(self, statements: List[Statement]) -> None:
         for statement in statements:
