@@ -20,11 +20,11 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         Args:
             environment: 
         """
-        self.environment = environment or Environment()
-        
         self.globals = Environment()
         self.globals.add(Token(TokenType.IDENTIFIER, 0, 'clock'),
                          CoffeeBeanClock())
+
+        self.environment = environment or self.globals 
         
         self.line = 1
 
