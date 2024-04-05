@@ -218,7 +218,7 @@ class Lexer:
             # Eat literals.
             elif self.character.isnumeric():
                 self._eat_number()
-            elif self.character.isalpha():
+            elif self.character.isalpha() or self.character == '_':
                 self._eat_identifier()
             elif self.character == '"':
                 self._eat_string()

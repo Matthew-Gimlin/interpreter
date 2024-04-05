@@ -36,9 +36,10 @@ class CoffeeBeanFunction(CoffeeBeanCallable):
     Attributes:
         declaration: The user-defined function declaration.
     """
-    def __init__(self, declaration: Function) -> None:
+    def __init__(self, declaration: Function, closure: Environment) -> None:
         super().__init__(len(declaration.parameters))
         self.declaration = declaration
+        self.closure = closure
 
     def __str__(self) -> str:
         return f'<function {self.declaration.name}>'
@@ -46,7 +47,7 @@ class CoffeeBeanFunction(CoffeeBeanCallable):
     def call(self,
              interpreter: Interpreter,
              arguments: List[object]) -> object:
-        environment = Environment(interpreter.globals)
+        environment = Environment(self.closure)
         for parameter, argument in zip(self.declaration.parameters, arguments):
             environment.add(parameter, argument)
 

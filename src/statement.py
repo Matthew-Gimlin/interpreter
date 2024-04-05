@@ -159,7 +159,9 @@ class Function(Statement):
         self.body = body
 
     def __str__(self) -> str:
-        return f'{self.name}({", ".join(self.parameters)})\n{self.body}'
+        return f'function {self.name}(' \
+            f'{", ".join(str(p) for p in self.parameters)})\n' \
+            f'{" ".join(str(s) for s in self.body)}'
 
     def accept(self, visitor: StatementVisitor):
         return visitor.visit_function(self)

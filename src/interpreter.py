@@ -21,8 +21,9 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             environment: 
         """
         self.globals = Environment()
-        self.globals.add(Token(TokenType.IDENTIFIER, 0, 'clock'),
-                         CoffeeBeanClock())
+        self.globals.values = {
+            'clock': CoffeeBeanClock(),
+        }
 
         self.environment = environment or self.globals 
         
@@ -283,7 +284,7 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         self._execute_block(block.statements, Environment(self.environment))
 
     def visit_function(self, function: Function) -> None:
-        coffee_bean_function = CoffeeBeanFunction(function)
+        coffee_bean_function = CoffeeBeanFunction(function, self.environment)
         self.environment.add(function.name, coffee_bean_function)
 
     def visit_return(self, _return: Return) -> None:

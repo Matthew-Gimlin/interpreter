@@ -86,7 +86,7 @@ class Parser:
                         TokenType.IDENTIFIER]):
             return Literal(self._eat())
 
-        if self._match([TokenType.LEFT_PARENTHESIS]):
+        elif self._match([TokenType.LEFT_PARENTHESIS]):
             self._eat()
             expression = self._eat_expression()
 
@@ -95,6 +95,21 @@ class Parser:
 
             self._eat() # Eat the right paranthesis.
             return Grouping(expression)
+
+        elif self._match([TokenType.LEFT_BRACE]):
+            values = []
+            self._eat()
+            while not self._match([TokenType.RIGHT_BRACE]):
+                values.append(self._eat_expression())
+                if not self._match([TokenType.COMMA]):
+                    break
+                self._eat()
+
+            if not self._match([TokenType.RIGHT_BRACE]):
+                self._error("Expected '}' after values.")
+
+            print(values)
+            exit()
 
         self._error('Expected expression.')
 
