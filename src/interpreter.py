@@ -122,6 +122,13 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
         return None
 
+    def visit_array(self, array: Array) -> List[object]:
+        values = []
+        for expression in array.expressions:
+            values.append(self.evaluate(expression))
+
+        return values
+
     def visit_binary(self, binary: Binary) -> object:
         """Evaluates a binary expression.
         
@@ -241,6 +248,19 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
         return function.call(self, argument_values)
 
+    def visit_index(self, index: Index) -> object:
+        array = self.evaluate(index.array)
+        if type(array) != list:
+            self._error('Can only index arrays.')
+
+        index_value = self.evaluate(index.index)
+        if type(index_value) != int:
+            self._error('Can only index with type int.')
+        elif index_value >= len(array):
+            self._error('Index out of range.')
+
+        return array[index_value]
+
     def evaluate(self, expression: Expression) -> object:
         """Evaluates an expression.
 
@@ -257,6 +277,10 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
     def visit_echo(self, echo: Echo) -> None:
         value = self.evaluate(echo.expression)
+        if type(value) == list:
+            print('{' + ', '.join(self._to_string(item) for item in value) + '}')
+            return
+        
         print(self._to_string(value))
 
     def visit_if(self, _if: If) -> None:

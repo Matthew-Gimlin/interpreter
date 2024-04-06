@@ -86,6 +86,7 @@ class Parser:
                         TokenType.IDENTIFIER]):
             return Literal(self._eat())
 
+        # A grouping.
         elif self._match([TokenType.LEFT_PARENTHESIS]):
             self._eat()
             expression = self._eat_expression()
@@ -96,6 +97,7 @@ class Parser:
             self._eat() # Eat the right paranthesis.
             return Grouping(expression)
 
+        # An array.
         elif self._match([TokenType.LEFT_BRACE]):
             values = []
             self._eat()
@@ -108,28 +110,41 @@ class Parser:
             if not self._match([TokenType.RIGHT_BRACE]):
                 self._error("Expected '}' after values.")
 
-            print(values)
-            exit()
+            self._eat() # Eat the right curly brace.
+            return Array(values)
 
         self._error('Expected expression.')
+
+    def _eat_index(self) -> Expression:
+        expression = self._eat_primary()
+
+        while self._match([TokenType.LEFT_BRACKET]):
+            self._eat()
+            index = self._eat_expression()
+            expression = Index(expression, index)
+            if not self._match([TokenType.RIGHT_BRACKET]):
+                self._error("Expected ']' after index.")
+            self._eat()
+
+        return expression
 
     def _finish_call(self, callee: Expression) -> Expression:
         arguments = []
         if not self._match([TokenType.RIGHT_PARENTHESIS]):
             while True:
-                arguments.append(self._eat_expression())
-                if not self._match([TokenType.COMMA]):
+                if self._match([TokenType.COMMA]):
+                    self._eat()
+                if self._match([TokenType.RIGHT_PARENTHESIS]):
+                    self._eat()
                     break
-                self._eat() # Eat the comma.
-
-        if not self._match([TokenType.RIGHT_PARENTHESIS]):
-            self._error("Expected ')' after arguments.")
+                    
+                arguments.append(self._eat_expression())
 
         right_parenthesis = self._eat()
         return Call(callee, right_parenthesis, arguments)
 
     def _eat_call(self) -> Expression:
-        expression = self._eat_primary()
+        expression = self._eat_index()
 
         while True:
             if self._match([TokenType.LEFT_PARENTHESIS]):
@@ -287,18 +302,17 @@ class Parser:
         parameters = []
         if not self._match([TokenType.RIGHT_PARENTHESIS]):
             while True:
-                if not self._match([TokenType.IDENTIFIER]):
+                if self._match([TokenType.COMMA]):
+                    self._eat()
+                    
+                if self._match([TokenType.RIGHT_PARENTHESIS]):
+                    self._eat()
+                    break
+                elif self._match([TokenType.IDENTIFIER]):
+                    parameters.append(self._eat())
+                else:
                     self._error('Expected parameter name.')
                     
-                parameters.append(self._eat())
-                if not self._match([TokenType.COMMA]):
-                    break
-                self._eat() # Eat the comma.
-        
-        if not self._match([TokenType.RIGHT_PARENTHESIS]):
-            self._error("Expected ')' after parameters.")
-        self._eat() # Eat the right parenthesis.
-
         if not self._match([TokenType.DO]):
             self._error('Expected `do` before function body.')
         self._eat() # Eat the do keyword.

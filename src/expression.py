@@ -7,6 +7,9 @@ class ExpressionVisitor:
     def visit_literal(self, literal: Literal):
         pass
 
+    def visit_array(self, array: Array):
+        pass
+
     def visit_binary(self, binary: Binary):
         pass
 
@@ -23,6 +26,9 @@ class ExpressionVisitor:
         pass
 
     def visit_call(self, call: Call):
+        pass
+
+    def visit_index(self, index: Index):
         pass
 
 class Expression:
@@ -55,6 +61,17 @@ class Literal(Expression):
 
     def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_literal(self)
+
+class Array(Expression):
+    def __init__(self, expressions: List[Expression]) -> None:
+        self.expressions = expressions
+
+    def __str__(self) -> str:
+        return '{' + \
+            ', '.join(str(expression) for expression in self.expressions) + '}'
+
+    def accept(self, visitor: ExpressionVisitor):
+        return visitor.visit_array(self)
 
 class Binary(Expression):
     """Defines a container for a binary expression.
@@ -234,7 +251,21 @@ class Call(Expression):
         Returns:
             The callee expression and the arguments.
         """
-        return f'{self.callee}({",".join(self.arguments)})'
+        return f'{self.callee}({", ".join(self.arguments)})'
 
     def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_call(self)
+
+class Index(Expression):
+    """Defines a container for an array index expression.
+    
+    """
+    def __init__(self, array: Expression, index: Expression) -> None:
+        self.array = array
+        self.index = index
+
+    def __str__(self) -> str:
+        return f'{self.array}[{self.index}]'
+    
+    def accept(self, visitor: ExpressionVisitor):
+        return visitor.visit_index(self)
