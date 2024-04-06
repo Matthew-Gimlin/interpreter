@@ -31,6 +31,9 @@ class ExpressionVisitor:
     def visit_index(self, index: Index):
         pass
 
+    def visit_array_assigment(self, array_assignment: ArrayAssignment):
+        pass
+
 class Expression:
     """Defines an expression base class.
     """
@@ -188,6 +191,17 @@ class Assignment(Expression):
     def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_assignment(self)
 
+class ArrayAssignment(Expression):
+    def __init__(self, index: Index, value: Expression) -> None:
+        self.index = index
+        self.value = value
+
+    def __str__(self) -> str:
+        return f'{self.index} = {self.value}'
+
+    def accept(self, visitor: ExpressionVisitor):
+        return visitor.visit_array_assignment(self)
+
 class Logical(Expression):
     """Defines a container for a logical expression.
 
@@ -260,12 +274,12 @@ class Index(Expression):
     """Defines a container for an array index expression.
     
     """
-    def __init__(self, array: Expression, index: Expression) -> None:
-        self.array = array
+    def __init__(self, name: Token, index: Expression) -> None:
+        self.name = name
         self.index = index
 
     def __str__(self) -> str:
-        return f'{self.array}[{self.index}]'
+        return f'{self.name}[{self.index}]'
     
     def accept(self, visitor: ExpressionVisitor):
         return visitor.visit_index(self)

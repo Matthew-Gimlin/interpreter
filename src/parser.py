@@ -121,7 +121,10 @@ class Parser:
         while self._match([TokenType.LEFT_BRACKET]):
             self._eat()
             index = self._eat_expression()
-            expression = Index(expression, index)
+            
+            if not isinstance(expression, Literal):
+                self._error('Can only index arrays.')
+            expression = Index(expression.value, index)
             if not self._match([TokenType.RIGHT_BRACKET]):
                 self._error("Expected ']' after index.")
             self._eat()
@@ -243,6 +246,8 @@ class Parser:
 
             if isinstance(expression, Literal):
                 return Assignment(expression.value, value)
+            elif isinstance(expression, Index):
+                return ArrayAssignment(expression, value)
 
             self._error('Invalid assignment target.')
 

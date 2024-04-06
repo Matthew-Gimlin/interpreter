@@ -249,7 +249,7 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         return function.call(self, argument_values)
 
     def visit_index(self, index: Index) -> object:
-        array = self.evaluate(index.array)
+        array = self.environment.get(index.name)
         if type(array) != list:
             self._error('Can only index arrays.')
 
@@ -260,6 +260,13 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             self._error('Index out of range.')
 
         return array[index_value]
+
+    def visit_array_assignment(self,
+                               array_assignment: ArrayAssignment) -> object:
+        value = self.evaluate(array_assignment.value)
+        array = self.environment.get(array_assignment.index.name)
+        index = self.evaluate(array_assignment.index.index)
+        array[index] = value
 
     def evaluate(self, expression: Expression) -> object:
         """Evaluates an expression.
